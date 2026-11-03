@@ -1,0 +1,185 @@
+{
+  "ContentStatus": "Draft copied from supplied prototype; business approval pending",
+  "Categories": [
+    {
+      "CategoryCode": "IND_INNOVATION",
+      "Title": "Innovation Champion",
+      "AwardType": "Individual",
+      "Description": "Recognizes creative ideas that deliver meaningful improvements.",
+      "DisplayOrder": 1,
+      "Questions": [
+        {
+          "Title": "Originality of the idea",
+          "QuestionText": "Explain what made the idea distinctive and how it addressed an unmet need.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Implementation and ownership",
+          "QuestionText": "Describe how the nominee took the idea from concept to practical delivery.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Measurable impact",
+          "QuestionText": "Share the outcomes, improvements, or value that resulted from the idea.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    },
+    {
+      "CategoryCode": "IND_CUSTOMER",
+      "Title": "Customer Impact",
+      "AwardType": "Individual",
+      "Description": "Recognizes exceptional service and measurable customer outcomes.",
+      "DisplayOrder": 2,
+      "Questions": [
+        {
+          "Title": "Understanding customer needs",
+          "QuestionText": "Show how the nominee identified and understood the customer’s priorities.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Quality of service or solution",
+          "QuestionText": "Describe the exceptional quality of the service or solution provided.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Measurable customer outcomes",
+          "QuestionText": "Share specific results, feedback, or improvements for the customer.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Sustained customer commitment",
+          "QuestionText": "Explain how the nominee maintained a lasting focus on customer success.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    },
+    {
+      "CategoryCode": "IND_EXCELLENCE",
+      "Title": "Excellence in Execution",
+      "AwardType": "Individual",
+      "Description": "Recognizes consistently outstanding delivery and ownership.",
+      "DisplayOrder": 3,
+      "Questions": [
+        {
+          "Title": "Quality and reliability",
+          "QuestionText": "Describe how the nominee consistently delivered high-quality, dependable work.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Ownership and accountability",
+          "QuestionText": "Show how the nominee took responsibility and followed through on commitments.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Results delivered",
+          "QuestionText": "Share the outcomes achieved and why they mattered to the organization.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    },
+    {
+      "CategoryCode": "TEAM_COLLAB",
+      "Title": "Collaboration Excellence",
+      "AwardType": "Team",
+      "Description": "Recognizes teams that succeed through strong cross-functional partnership.",
+      "DisplayOrder": 1,
+      "Questions": [
+        {
+          "Title": "Cross-functional collaboration",
+          "QuestionText": "Describe how the team partnered effectively across functions or boundaries.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Inclusive participation and knowledge sharing",
+          "QuestionText": "Show how the team welcomed diverse perspectives and shared expertise.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Collective outcomes",
+          "QuestionText": "Share the results the team achieved by working together.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    },
+    {
+      "CategoryCode": "TEAM_IMPACT",
+      "Title": "Business Impact",
+      "AwardType": "Team",
+      "Description": "Recognizes teams that deliver measurable organizational value.",
+      "DisplayOrder": 2,
+      "Questions": [
+        {
+          "Title": "Alignment with business priorities",
+          "QuestionText": "Explain how the team’s work supported strategic organizational priorities.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Measurable results",
+          "QuestionText": "Share specific business outcomes and the evidence used to measure them.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Effective use of resources",
+          "QuestionText": "Describe how the team used time, budget, and expertise responsibly.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Sustainability of impact",
+          "QuestionText": "Explain how the team’s results will continue to create value over time.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    },
+    {
+      "CategoryCode": "TEAM_TRANSFORM",
+      "Title": "Transformation & Innovation",
+      "AwardType": "Team",
+      "Description": "Recognizes teams that introduce and sustain meaningful change.",
+      "DisplayOrder": 3,
+      "Questions": [
+        {
+          "Title": "Novel approach",
+          "QuestionText": "Describe the new approach and what made it different from previous practice.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Adoption and change management",
+          "QuestionText": "Explain how the team helped people adopt and sustain the change.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Measurable improvement",
+          "QuestionText": "Share the improvements achieved and how they were measured.",
+          "GuidanceText": "",
+          "IsRequired": true
+        },
+        {
+          "Title": "Scalability and sustainability",
+          "QuestionText": "Show how the solution can grow and remain effective over time.",
+          "GuidanceText": "",
+          "IsRequired": true
+        }
+      ]
+    }
+  ]
+}

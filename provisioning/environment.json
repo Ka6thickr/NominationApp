@@ -1,0 +1,17 @@
+{
+  "SiteUrl": "https://5v7nf4.sharepoint.com/sites/AISite",
+  "BrandName": "Contoso",
+  "Lists": {
+    "Categories": "AwardCategories",
+    "Questions": "AwardQuestions",
+    "IND_INNOVATION": "Nom_IndividualInnovation",
+    "IND_CUSTOMER": "Nom_IndividualCustomer",
+    "IND_EXCELLENCE": "Nom_IndividualExcellence",
+    "TEAM_COLLAB": "Nom_TeamCollaboration",
+    "TEAM_IMPACT": "Nom_TeamImpact",
+    "TEAM_TRANSFORM": "Nom_TeamTransformation"
+  },
+  "EmployeeLevels": ["L1", "L2", "L3", "L4", "L5", "L6"],
+  "EmployeeLevelsApproved": false,
+  "SeedContentApproved": false
+}

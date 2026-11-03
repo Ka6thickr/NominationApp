@@ -1,0 +1,78 @@
+{
+  "SiteUrl": "https://5v7nf4.sharepoint.com/sites/AISite",
+  "VerifiedAtUtc": "2026-10-31T04:45:10.4663977Z",
+  "Lists": [
+    {
+      "Key": "Categories",
+      "ListName": "AwardCategories",
+      "ListId": "5d136b29-d572-4ab0-814a-d0b3ee92dbf0",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/AwardCategories",
+      "CustomColumns": 6,
+      "Verified": true
+    },
+    {
+      "Key": "Questions",
+      "ListName": "AwardQuestions",
+      "ListId": "053ab17c-0c49-4638-9b17-a102b474a73d",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/AwardQuestions",
+      "CustomColumns": 8,
+      "Verified": true
+    },
+    {
+      "Key": "IND_INNOVATION",
+      "ListName": "Nom_IndividualInnovation",
+      "ListId": "6a3d7add-e433-4fc9-b1ab-26b8e2d96e7b",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_IndividualInnovation",
+      "CustomColumns": 29,
+      "Verified": true
+    },
+    {
+      "Key": "IND_CUSTOMER",
+      "ListName": "Nom_IndividualCustomer",
+      "ListId": "984633a4-80a5-418e-ad47-86d6c80c6192",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_IndividualCustomer",
+      "CustomColumns": 29,
+      "Verified": true
+    },
+    {
+      "Key": "IND_EXCELLENCE",
+      "ListName": "Nom_IndividualExcellence",
+      "ListId": "13bae40c-21d5-433a-ae84-75900b098e7b",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_IndividualExcellence",
+      "CustomColumns": 29,
+      "Verified": true
+    },
+    {
+      "Key": "TEAM_COLLAB",
+      "ListName": "Nom_TeamCollaboration",
+      "ListId": "52a5a54b-3523-4ff3-8b97-a8f5ef474f08",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_TeamCollaboration",
+      "CustomColumns": 31,
+      "Verified": true
+    },
+    {
+      "Key": "TEAM_IMPACT",
+      "ListName": "Nom_TeamImpact",
+      "ListId": "fb936eb4-c9d9-4321-98c2-6dd81c2a11cf",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_TeamImpact",
+      "CustomColumns": 31,
+      "Verified": true
+    },
+    {
+      "Key": "TEAM_TRANSFORM",
+      "ListName": "Nom_TeamTransformation",
+      "ListId": "87ebc1dd-91c9-467f-87cb-7df7faa09307",
+      "Url": "https://5v7nf4.sharepoint.com/sites/AISite/Lists/Nom_TeamTransformation",
+      "CustomColumns": 31,
+      "Verified": true
+    }
+  ],
+  "SeedPublished": false,
+  "SecurityReviewRequired": true,
+  "Notes": [
+    "Configuration group permissions and removal of ordinary-user delete rights still require approved groups.",
+    "Own-item settings do not restrict users with Manage Lists or broader administrator rights.",
+    "Submitted-item protection option remains undecided.",
+    "Question tags deferred; no tag columns added."
+  ]
+}

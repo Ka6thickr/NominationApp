@@ -1,0 +1,10 @@
+{
+  "description": "Employees can nominate colleagues or teams for awards, document their impact with evidence, and track drafts and submissions in one clear workflow.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
