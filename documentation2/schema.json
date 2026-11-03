@@ -1,0 +1,1566 @@
+{
+  "Categories": [
+    {
+      "Type": "Text",
+      "Indexed": false,
+      "Name": "Title",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "CategoryCode",
+      "Required": true,
+      "Unique": true
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "Individual",
+        "Team"
+      ],
+      "Indexed": false,
+      "Name": "AwardType",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Name": "Description",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Number",
+      "Indexed": false,
+      "Name": "DisplayOrder",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "IsActive",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "PublishedQuestionVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    }
+  ],
+  "Questions": [
+    {
+      "Type": "Text",
+      "Indexed": false,
+      "Name": "Title",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Lookup",
+      "Indexed": true,
+      "Name": "Category",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Number",
+      "Indexed": true,
+      "Name": "QuestionSetVersion",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "Q1",
+        "Q2",
+        "Q3",
+        "Q4",
+        "Q5",
+        "Q6"
+      ],
+      "Indexed": false,
+      "Name": "QuestionKey",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Note",
+      "Indexed": false,
+      "Name": "QuestionText",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Name": "GuidanceText",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Number",
+      "Indexed": false,
+      "Name": "DisplayOrder",
+      "Required": true,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "1",
+      "Indexed": false,
+      "Name": "IsRequired",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "ConfigurationKey",
+      "Required": true,
+      "Unique": true
+    }
+  ],
+  "IND_INNOVATION": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "NominatedEmployee",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    }
+  ],
+  "IND_CUSTOMER": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "NominatedEmployee",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    }
+  ],
+  "IND_EXCELLENCE": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "NominatedEmployee",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    }
+  ],
+  "TEAM_COLLAB": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "TeamName",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "TeamPrimaryContact",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Name": "TeamMembers",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "UserMulti",
+      "Required": false
+    }
+  ],
+  "TEAM_IMPACT": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "TeamName",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "TeamPrimaryContact",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Name": "TeamMembers",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "UserMulti",
+      "Required": false
+    }
+  ],
+  "TEAM_TRANSFORM": [
+    {
+      "Name": "Title",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "Category",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Lookup",
+      "Required": false
+    },
+    {
+      "Name": "QuestionSetVersion",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "QuestionCount",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Number",
+      "Required": false
+    },
+    {
+      "Name": "NominatedBy",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Type": "Text",
+      "Indexed": true,
+      "Name": "NominatorEmail",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "EmployeeRole",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Type": "Choice",
+      "Choices": [
+        "L1",
+        "L2",
+        "L3",
+        "L4",
+        "L5",
+        "L6"
+      ],
+      "Indexed": false,
+      "Name": "EmployeeLevel",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Choice",
+      "Default": "Draft",
+      "Choices": [
+        "Draft",
+        "Submitted"
+      ],
+      "Indexed": true,
+      "Name": "NominationStatus",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "DeclarationAccepted",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "SubmittedOn",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "DateTime",
+      "Required": false
+    },
+    {
+      "Name": "Q1PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q1RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q1Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q2PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q2RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q2Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q3PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q3RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q3Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q4PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q4RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q4Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q5PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q5RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q5Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "Q6PromptSnapshot",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Type": "Boolean",
+      "Default": "0",
+      "Indexed": false,
+      "Name": "Q6RequiredSnapshot",
+      "Required": false,
+      "Unique": false
+    },
+    {
+      "Name": "Q6Response",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Note",
+      "Required": false
+    },
+    {
+      "Name": "TeamName",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "Text",
+      "Required": false
+    },
+    {
+      "Name": "TeamPrimaryContact",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "User",
+      "Required": false
+    },
+    {
+      "Name": "TeamMembers",
+      "Indexed": false,
+      "Unique": false,
+      "Type": "UserMulti",
+      "Required": false
+    }
+  ]
+}

@@ -10,6 +10,8 @@ This repository contains the source design, provisioning scripts, Power Fx recip
 
 ## Start here
 
+**New manual rebuild:** [documentation2 — complete setup with the six updated list names](documentation2/README.md). Use this package for MDAward, TrendMarcherAward, BestInnovatorIndividual, MDAwardTeam, BestInnovatorTeam and SpecialTeamAward. The original documentation below is retained as a historical reference.
+
 - [Implementation status and exact manual resume steps](documentation/Implementation-Status.md)
 - [Full GitHub Copilot app guide](documentation/GitHub-Copilot-App-Guide.md)
 - [Manual screen and formula guide](documentation/manual-build/README.md)

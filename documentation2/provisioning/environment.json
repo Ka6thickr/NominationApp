@@ -1,0 +1,17 @@
+{
+  "SiteUrl": "https://5v7nf4.sharepoint.com/sites/AISite",
+  "BrandName": "Contoso",
+  "Lists": {
+    "Categories": "AwardCategories",
+    "Questions": "AwardQuestions",
+    "IND_INNOVATION": "MDAward",
+    "IND_CUSTOMER": "TrendMarcherAward",
+    "IND_EXCELLENCE": "BestInnovatorIndividual",
+    "TEAM_COLLAB": "MDAwardTeam",
+    "TEAM_IMPACT": "BestInnovatorTeam",
+    "TEAM_TRANSFORM": "SpecialTeamAward"
+  },
+  "EmployeeLevels": ["L1", "L2", "L3", "L4", "L5", "L6"],
+  "EmployeeLevelsApproved": false,
+  "SeedContentApproved": false
+}
