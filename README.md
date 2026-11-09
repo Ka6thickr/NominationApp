@@ -10,6 +10,8 @@ This repository contains the source design, provisioning scripts, Power Fx recip
 
 ## Start here
 
+**Current environment:** [Prod.md — reviewed screen exports, latest mapping and full build guide](Prod.md). This supersedes documentation2's order-based list mapping and uses the destination screen/form names supplied on 9 November 2026.
+
 **New manual rebuild:** [documentation2 — complete setup with the six updated list names](documentation2/README.md). Use this package for MDAward, TrendMarcherAward, BestInnovatorIndividual, MDAwardTeam, BestInnovatorTeam and SpecialTeamAward. The original documentation below is retained as a historical reference.
 
 - [Implementation status and exact manual resume steps](documentation/Implementation-Status.md)
