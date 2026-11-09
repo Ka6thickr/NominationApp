@@ -10,6 +10,8 @@ This repository contains the source design, provisioning scripts, Power Fx recip
 
 ## Start here
 
+**Continue your manual build:** [stepstocomplete.md](stepstocomplete.md) starts after the confirmed II/IC form corrections and walks through scrolling containers, all screen layouts, shared state and end-to-end testing, with the full formula reference included.
+
 **Current environment:** [Prod.md — reviewed screen exports, latest mapping and full build guide](Prod.md). This supersedes documentation2's order-based list mapping and uses the destination screen/form names supplied on 9 November 2026.
 
 **New manual rebuild:** [documentation2 — complete setup with the six updated list names](documentation2/README.md). Use this package for MDAward, TrendMarcherAward, BestInnovatorIndividual, MDAwardTeam, BestInnovatorTeam and SpecialTeamAward. The original documentation below is retained as a historical reference.
