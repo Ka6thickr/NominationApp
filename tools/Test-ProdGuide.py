@@ -25,6 +25,10 @@ for name,p in [('BestInnovatorIndividual','II'),('MDAward','IC'),('TrendMarcherA
         assert f'`err{p}Q{slot}`' in text
 assert 'varIsAdmin' not in text
 assert 'three configured questions' in text
+for p in ['II','IC','IE','TC','TI','TT','Home','Details','Category','Review','Confirmation','Mine','Admin']:
+    for name in ['cntScroll','cntPage','cntHeader','cntNav','cntStepperStrip','cntActions','btnNavNew','btnNavMine','btnStartNew','btnGoMine','cntExitOverlay','btnExitCancel','btnExitDiscard','cntBusy']:
+        assert name+p in text,(p,name)
+    assert f'<a id="build-{p.lower()}"' in text
 headings=re.findall(r'^#+ (.+)$',text,re.M)
 slugs={re.sub(r'[^\w\- ]','',h.lower()).replace(' ','-') for h in headings}
 slugs.update(re.findall(r'<a id="([^"]+)"',text))

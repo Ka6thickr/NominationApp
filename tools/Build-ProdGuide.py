@@ -215,6 +215,19 @@ def link(m):
       'Navigate-Active-Form.fx':'return-to-the-existing-active-form-without-resetting-it'}
     return '](#'+anchors.get(target,'build-sequence-for-all-13-screens')+')'
 body=re.sub(r'\]\(([^)]+)\)',link,body)
+# Give readers exact per-screen controls before the generic reference appendix.
+import runpy
+screen_chapters = runpy.run_path(str(ROOT/'tools/Prod-Screen-Chapters.py'))['chapters']()
+body = '# Prod — screen-based manual build guide\n\n' + screen_chapters + '\n\n---\n\n# Reference appendix — mappings, complete formulas and historical audit\n\n' + body
+# Repair inherited generic formula-link targets from the supplied change log.
+for filename,anchor in {
+    'Review.Submit.OnSelect.fx':'review-screen-submit-button-onselect',
+    'Details.Continue.OnSelect.fx':'details-continue-button-onselect',
+    'Category.Load.OnSelect.fx':'category-load-action-after-selectiondiscard-checks',
+    'Admin.LoadCopy.OnSelect.fx':'question-administration-copyload-button-onselect',
+    'Admin.Publish.OnSelect.fx':'question-administration-publish-button-onselect',
+}.items():
+    body = body.replace('['+filename+'](#build-sequence-for-all-13-screens)', '['+filename+'](#'+anchor+')')
 (ROOT/'Prod.md').write_text(body,encoding='utf-8')
 manifest={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in INPUT.iterdir() if p.is_file() and p.name!='manifest.json'}
 (INPUT/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')

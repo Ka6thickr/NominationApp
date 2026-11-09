@@ -1,3 +1,1639 @@
+# Prod — screen-based manual build guide
+
+# Screen-by-screen construction — start here
+
+This section fills the naming, parent/container and button-placement gaps in the original reference. These are new controls to create unless they already exist in your app. Keep the corrected II/IC forms. All names below are app-wide unique. Screen-specific instructions take precedence over generic `cntScroll`, `cntPage`, `hdr`, `innerX`, `innerWidth` and `lastControl` examples in the reference appendix. Those generic terms are explanations, not controls or variables to create.
+
+The latest II/IC corrections are user-confirmed; the older export audit later in this file is historical evidence, not a request to repeat completed changes. Actual rendering/runtime still needs verification. The exact MD screen is scrMDAward.
+
+**Work order:** construct the first award shell, finish the other five award shells, then Home → Details → Category → My nominations → Review → Confirmation → Administration. Create all referenced form/control dependencies before running App.OnStart. The shared App/formula and component sections remain complete below.
+
+## Screen index
+
+
+- [scrBestInnovatorIndividual — exact controls and build order](#build-ii)
+- [scrMDAward — exact controls and build order](#build-ic)
+- [scrTrendMarcherAward — exact controls and build order](#build-ie)
+- [scrBestInnovatorTeam — exact controls and build order](#build-tc)
+- [scrMDAwardTeam — exact controls and build order](#build-ti)
+- [scrSpecialTeamAward — exact controls and build order](#build-tt)
+- [scrHome — exact controls and build order](#build-home)
+- [scrNomineeDetails — exact controls and build order](#build-details)
+- [scrCategorySelection — exact controls and build order](#build-category)
+- [scrReview — exact controls and build order](#build-review)
+- [scrConfirmation — exact controls and build order](#build-confirmation)
+- [scrMyNominations — exact controls and build order](#build-mine)
+- [scrQuestionAdministration — exact controls and build order](#build-admin)
+
+<a id="build-ii"></a>
+## scrBestInnovatorIndividual — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrBestInnovatorIndividual. Create the following manual containers directly on the screen, except cntScrollII, which is a **vertical auto-layout container**. Create cntPageII as a **manual container inside cntScrollII**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrBestInnovatorIndividual
+  cntHeaderII
+    lblBrandII, lblAppTitleII, lblUserII
+  cntNavII
+    btnNavNewII, btnNavMineII
+  cntStepperStripII
+    cmpStepperII
+  cntScrollII
+    cntPageII
+      lblHeadingII, lblSubtitleII
+      (screen content specified below)
+      cntActionsII
+  btnStartNewII, btnGoMineII (hidden action helpers)
+  cntExitOverlayII
+    cntExitDialogII
+      lblExitMessageII, btnExitCancelII, btnExitDiscardII
+  cntBusyII
+    lblBusyII
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderII | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavII | `0` | `cntHeaderII.Y+cntHeaderII.Height` | `Parent.Width` | `48` |
+| cntStepperStripII | `0` | `cntNavII.Y+cntNavII.Height` | `Parent.Width` | `94` |
+| cntScrollII | `0` | `cntStepperStripII.Y+cntStepperStripII.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageII | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsII.Y+cntActionsII.Height+If(App.Width<=760,40,56)` |
+| cntActionsII | `lblHeadingII.X` | Screen-specific formula below | `lblHeadingII.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripII.Visible=`true`. For cntScrollII, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageII, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsII exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingII: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleII: same X/Width, Y=`lblHeadingII.Y+lblHeadingII.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderII: lblBrandII Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleII Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserII Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoII, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavII: btnNavNewII, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineII, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewII and btnGoMineII **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewII.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineII.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewII.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewII)
+)
+```
+
+btnNavMineII.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineII)
+)
+```
+
+cntExitOverlayII: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogII inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageII: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelII: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardII: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewII),Select(btnGoMineII))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyII last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyII: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmBestInnovatorIndividual inside cntPageII. Also create lblSaveErrorII, cntSummaryII, cntProgressII and cntActionsII inside that page. Use [the exact placement table](#scrbestinnovatorindividual--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsII.Y=`Max(frmBestInnovatorIndividual.Y+frmBestInnovatorIndividual.Height,If(lblSaveErrorII.Visible,lblSaveErrorII.Y+lblSaveErrorII.Height,0),cntProgressII.Y+cntProgressII.Height)+20`.
+
+Inside cntSummaryII, create lblSummaryII: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsII: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnIIBack)`.
+
+Inside cntProgressII, create lblProgressII: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpII: X=16,Y=`lblProgressII.Y+lblProgressII.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsII | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnIIBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnIISaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnIISaveDraft.OnSelect |
+| btnIIReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnIIReview.OnSelect |
+| btnIIBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineII)` |
+
+First three buttons Visible=`!varReadOnly`; btnIIBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-ii); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrBestInnovatorIndividual
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperII** into cntStepperStripII. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrBestInnovatorIndividual
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-ic"></a>
+## scrMDAward — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrMDAward. Create the following manual containers directly on the screen, except cntScrollIC, which is a **vertical auto-layout container**. Create cntPageIC as a **manual container inside cntScrollIC**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrMDAward
+  cntHeaderIC
+    lblBrandIC, lblAppTitleIC, lblUserIC
+  cntNavIC
+    btnNavNewIC, btnNavMineIC
+  cntStepperStripIC
+    cmpStepperIC
+  cntScrollIC
+    cntPageIC
+      lblHeadingIC, lblSubtitleIC
+      (screen content specified below)
+      cntActionsIC
+  btnStartNewIC, btnGoMineIC (hidden action helpers)
+  cntExitOverlayIC
+    cntExitDialogIC
+      lblExitMessageIC, btnExitCancelIC, btnExitDiscardIC
+  cntBusyIC
+    lblBusyIC
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderIC | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavIC | `0` | `cntHeaderIC.Y+cntHeaderIC.Height` | `Parent.Width` | `48` |
+| cntStepperStripIC | `0` | `cntNavIC.Y+cntNavIC.Height` | `Parent.Width` | `94` |
+| cntScrollIC | `0` | `cntStepperStripIC.Y+cntStepperStripIC.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageIC | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsIC.Y+cntActionsIC.Height+If(App.Width<=760,40,56)` |
+| cntActionsIC | `lblHeadingIC.X` | Screen-specific formula below | `lblHeadingIC.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripIC.Visible=`true`. For cntScrollIC, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageIC, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsIC exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingIC: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleIC: same X/Width, Y=`lblHeadingIC.Y+lblHeadingIC.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderIC: lblBrandIC Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleIC Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserIC Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoIC, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavIC: btnNavNewIC, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineIC, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewIC and btnGoMineIC **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewIC.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineIC.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewIC.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewIC)
+)
+```
+
+btnNavMineIC.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineIC)
+)
+```
+
+cntExitOverlayIC: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogIC inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageIC: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelIC: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardIC: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewIC),Select(btnGoMineIC))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyIC last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyIC: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmMDAward inside cntPageIC. Also create lblSaveErrorIC, cntSummaryIC, cntProgressIC and cntActionsIC inside that page. Use [the exact placement table](#scrmdaward--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsIC.Y=`Max(frmMDAward.Y+frmMDAward.Height,If(lblSaveErrorIC.Visible,lblSaveErrorIC.Y+lblSaveErrorIC.Height,0),cntProgressIC.Y+cntProgressIC.Height)+20`.
+
+Inside cntSummaryIC, create lblSummaryIC: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsIC: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnICBack)`.
+
+Inside cntProgressIC, create lblProgressIC: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpIC: X=16,Y=`lblProgressIC.Y+lblProgressIC.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsIC | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnICBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnICSaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnICSaveDraft.OnSelect |
+| btnICReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnICReview.OnSelect |
+| btnICBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineIC)` |
+
+First three buttons Visible=`!varReadOnly`; btnICBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-ic); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrMDAward
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperIC** into cntStepperStripIC. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrMDAward
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-ie"></a>
+## scrTrendMarcherAward — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrTrendMarcherAward. Create the following manual containers directly on the screen, except cntScrollIE, which is a **vertical auto-layout container**. Create cntPageIE as a **manual container inside cntScrollIE**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrTrendMarcherAward
+  cntHeaderIE
+    lblBrandIE, lblAppTitleIE, lblUserIE
+  cntNavIE
+    btnNavNewIE, btnNavMineIE
+  cntStepperStripIE
+    cmpStepperIE
+  cntScrollIE
+    cntPageIE
+      lblHeadingIE, lblSubtitleIE
+      (screen content specified below)
+      cntActionsIE
+  btnStartNewIE, btnGoMineIE (hidden action helpers)
+  cntExitOverlayIE
+    cntExitDialogIE
+      lblExitMessageIE, btnExitCancelIE, btnExitDiscardIE
+  cntBusyIE
+    lblBusyIE
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderIE | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavIE | `0` | `cntHeaderIE.Y+cntHeaderIE.Height` | `Parent.Width` | `48` |
+| cntStepperStripIE | `0` | `cntNavIE.Y+cntNavIE.Height` | `Parent.Width` | `94` |
+| cntScrollIE | `0` | `cntStepperStripIE.Y+cntStepperStripIE.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageIE | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsIE.Y+cntActionsIE.Height+If(App.Width<=760,40,56)` |
+| cntActionsIE | `lblHeadingIE.X` | Screen-specific formula below | `lblHeadingIE.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripIE.Visible=`true`. For cntScrollIE, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageIE, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsIE exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingIE: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleIE: same X/Width, Y=`lblHeadingIE.Y+lblHeadingIE.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderIE: lblBrandIE Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleIE Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserIE Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoIE, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavIE: btnNavNewIE, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineIE, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewIE and btnGoMineIE **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewIE.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineIE.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewIE.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewIE)
+)
+```
+
+btnNavMineIE.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineIE)
+)
+```
+
+cntExitOverlayIE: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogIE inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageIE: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelIE: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardIE: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewIE),Select(btnGoMineIE))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyIE last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyIE: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmTrendMarcherAward inside cntPageIE. Also create lblSaveErrorIE, cntSummaryIE, cntProgressIE and cntActionsIE inside that page. Use [the exact placement table](#scrtrendmarcheraward--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsIE.Y=`Max(frmTrendMarcherAward.Y+frmTrendMarcherAward.Height,If(lblSaveErrorIE.Visible,lblSaveErrorIE.Y+lblSaveErrorIE.Height,0),cntProgressIE.Y+cntProgressIE.Height)+20`.
+
+Inside cntSummaryIE, create lblSummaryIE: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsIE: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnIEBack)`.
+
+Inside cntProgressIE, create lblProgressIE: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpIE: X=16,Y=`lblProgressIE.Y+lblProgressIE.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsIE | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnIEBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnIESaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnIESaveDraft.OnSelect |
+| btnIEReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnIEReview.OnSelect |
+| btnIEBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineIE)` |
+
+First three buttons Visible=`!varReadOnly`; btnIEBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-ie); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrTrendMarcherAward
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperIE** into cntStepperStripIE. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrTrendMarcherAward
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-tc"></a>
+## scrBestInnovatorTeam — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrBestInnovatorTeam. Create the following manual containers directly on the screen, except cntScrollTC, which is a **vertical auto-layout container**. Create cntPageTC as a **manual container inside cntScrollTC**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrBestInnovatorTeam
+  cntHeaderTC
+    lblBrandTC, lblAppTitleTC, lblUserTC
+  cntNavTC
+    btnNavNewTC, btnNavMineTC
+  cntStepperStripTC
+    cmpStepperTC
+  cntScrollTC
+    cntPageTC
+      lblHeadingTC, lblSubtitleTC
+      (screen content specified below)
+      cntActionsTC
+  btnStartNewTC, btnGoMineTC (hidden action helpers)
+  cntExitOverlayTC
+    cntExitDialogTC
+      lblExitMessageTC, btnExitCancelTC, btnExitDiscardTC
+  cntBusyTC
+    lblBusyTC
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderTC | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavTC | `0` | `cntHeaderTC.Y+cntHeaderTC.Height` | `Parent.Width` | `48` |
+| cntStepperStripTC | `0` | `cntNavTC.Y+cntNavTC.Height` | `Parent.Width` | `94` |
+| cntScrollTC | `0` | `cntStepperStripTC.Y+cntStepperStripTC.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageTC | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsTC.Y+cntActionsTC.Height+If(App.Width<=760,40,56)` |
+| cntActionsTC | `lblHeadingTC.X` | Screen-specific formula below | `lblHeadingTC.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripTC.Visible=`true`. For cntScrollTC, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageTC, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsTC exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingTC: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleTC: same X/Width, Y=`lblHeadingTC.Y+lblHeadingTC.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderTC: lblBrandTC Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleTC Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserTC Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoTC, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavTC: btnNavNewTC, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineTC, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewTC and btnGoMineTC **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewTC.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineTC.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewTC.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewTC)
+)
+```
+
+btnNavMineTC.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineTC)
+)
+```
+
+cntExitOverlayTC: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogTC inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageTC: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelTC: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardTC: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewTC),Select(btnGoMineTC))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyTC last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyTC: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmBestInnovatorTeam inside cntPageTC. Also create lblSaveErrorTC, cntSummaryTC, cntProgressTC and cntActionsTC inside that page. Use [the exact placement table](#scrbestinnovatorteam--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsTC.Y=`Max(frmBestInnovatorTeam.Y+frmBestInnovatorTeam.Height,If(lblSaveErrorTC.Visible,lblSaveErrorTC.Y+lblSaveErrorTC.Height,0),cntProgressTC.Y+cntProgressTC.Height)+20`.
+
+Inside cntSummaryTC, create lblSummaryTC: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsTC: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnTCBack)`.
+
+Inside cntProgressTC, create lblProgressTC: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpTC: X=16,Y=`lblProgressTC.Y+lblProgressTC.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsTC | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnTCBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnTCSaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnTCSaveDraft.OnSelect |
+| btnTCReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnTCReview.OnSelect |
+| btnTCBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineTC)` |
+
+First three buttons Visible=`!varReadOnly`; btnTCBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-tc); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrBestInnovatorTeam
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperTC** into cntStepperStripTC. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrBestInnovatorTeam
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-ti"></a>
+## scrMDAwardTeam — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrMDAwardTeam. Create the following manual containers directly on the screen, except cntScrollTI, which is a **vertical auto-layout container**. Create cntPageTI as a **manual container inside cntScrollTI**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrMDAwardTeam
+  cntHeaderTI
+    lblBrandTI, lblAppTitleTI, lblUserTI
+  cntNavTI
+    btnNavNewTI, btnNavMineTI
+  cntStepperStripTI
+    cmpStepperTI
+  cntScrollTI
+    cntPageTI
+      lblHeadingTI, lblSubtitleTI
+      (screen content specified below)
+      cntActionsTI
+  btnStartNewTI, btnGoMineTI (hidden action helpers)
+  cntExitOverlayTI
+    cntExitDialogTI
+      lblExitMessageTI, btnExitCancelTI, btnExitDiscardTI
+  cntBusyTI
+    lblBusyTI
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderTI | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavTI | `0` | `cntHeaderTI.Y+cntHeaderTI.Height` | `Parent.Width` | `48` |
+| cntStepperStripTI | `0` | `cntNavTI.Y+cntNavTI.Height` | `Parent.Width` | `94` |
+| cntScrollTI | `0` | `cntStepperStripTI.Y+cntStepperStripTI.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageTI | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsTI.Y+cntActionsTI.Height+If(App.Width<=760,40,56)` |
+| cntActionsTI | `lblHeadingTI.X` | Screen-specific formula below | `lblHeadingTI.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripTI.Visible=`true`. For cntScrollTI, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageTI, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsTI exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingTI: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleTI: same X/Width, Y=`lblHeadingTI.Y+lblHeadingTI.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderTI: lblBrandTI Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleTI Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserTI Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoTI, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavTI: btnNavNewTI, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineTI, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewTI and btnGoMineTI **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewTI.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineTI.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewTI.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewTI)
+)
+```
+
+btnNavMineTI.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineTI)
+)
+```
+
+cntExitOverlayTI: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogTI inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageTI: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelTI: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardTI: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewTI),Select(btnGoMineTI))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyTI last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyTI: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmMDAwardTeam inside cntPageTI. Also create lblSaveErrorTI, cntSummaryTI, cntProgressTI and cntActionsTI inside that page. Use [the exact placement table](#scrmdawardteam--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsTI.Y=`Max(frmMDAwardTeam.Y+frmMDAwardTeam.Height,If(lblSaveErrorTI.Visible,lblSaveErrorTI.Y+lblSaveErrorTI.Height,0),cntProgressTI.Y+cntProgressTI.Height)+20`.
+
+Inside cntSummaryTI, create lblSummaryTI: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsTI: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnTIBack)`.
+
+Inside cntProgressTI, create lblProgressTI: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpTI: X=16,Y=`lblProgressTI.Y+lblProgressTI.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsTI | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnTIBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnTISaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnTISaveDraft.OnSelect |
+| btnTIReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnTIReview.OnSelect |
+| btnTIBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineTI)` |
+
+First three buttons Visible=`!varReadOnly`; btnTIBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-ti); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrMDAwardTeam
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperTI** into cntStepperStripTI. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrMDAwardTeam
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-tt"></a>
+## scrSpecialTeamAward — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrSpecialTeamAward. Create the following manual containers directly on the screen, except cntScrollTT, which is a **vertical auto-layout container**. Create cntPageTT as a **manual container inside cntScrollTT**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrSpecialTeamAward
+  cntHeaderTT
+    lblBrandTT, lblAppTitleTT, lblUserTT
+  cntNavTT
+    btnNavNewTT, btnNavMineTT
+  cntStepperStripTT
+    cmpStepperTT
+  cntScrollTT
+    cntPageTT
+      lblHeadingTT, lblSubtitleTT
+      (screen content specified below)
+      cntActionsTT
+  btnStartNewTT, btnGoMineTT (hidden action helpers)
+  cntExitOverlayTT
+    cntExitDialogTT
+      lblExitMessageTT, btnExitCancelTT, btnExitDiscardTT
+  cntBusyTT
+    lblBusyTT
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderTT | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavTT | `0` | `cntHeaderTT.Y+cntHeaderTT.Height` | `Parent.Width` | `48` |
+| cntStepperStripTT | `0` | `cntNavTT.Y+cntNavTT.Height` | `Parent.Width` | `94` |
+| cntScrollTT | `0` | `cntStepperStripTT.Y+cntStepperStripTT.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageTT | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1180,Parent.Width)` | `cntActionsTT.Y+cntActionsTT.Height+If(App.Width<=760,40,56)` |
+| cntActionsTT | `lblHeadingTT.X` | Screen-specific formula below | `lblHeadingTT.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripTT.Visible=`true`. For cntScrollTT, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageTT, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsTT exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingTT: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleTT: same X/Width, Y=`lblHeadingTT.Y+lblHeadingTT.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderTT: lblBrandTT Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleTT Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserTT Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoTT, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavTT: btnNavNewTT, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineTT, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewTT and btnGoMineTT **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewTT.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineTT.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewTT.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewTT)
+)
+```
+
+btnNavMineTT.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineTT)
+)
+```
+
+cntExitOverlayTT: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogTT inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageTT: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelTT: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardTT: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewTT),Select(btnGoMineTT))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyTT last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyTT: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+Keep frmSpecialTeamAward inside cntPageTT. Also create lblSaveErrorTT, cntSummaryTT, cntProgressTT and cntActionsTT inside that page. Use [the exact placement table](#scrspecialteamaward--placement) below for each coordinate; it expands every reference for this screen.
+
+cntActionsTT.Y=`Max(frmSpecialTeamAward.Y+frmSpecialTeamAward.Height,If(lblSaveErrorTT.Visible,lblSaveErrorTT.Y+lblSaveErrorTT.Height,0),cntProgressTT.Y+cntProgressTT.Height)+20`.
+
+Inside cntSummaryTT, create lblSummaryTT: X=20,Y=16,Width=`Max(0,Parent.Width-160)`,AutoHeight=true,Text=`Coalesce(NomineeDisplay,"Details incomplete") & "  •  " & varAwardType & " award" & Char(10) & NominationReference`. Create btnEditDetailsTT: Text="Edit details", X=`Parent.Width-130`,Y=16,Width=110,Height=38,Visible=`!varReadOnly`,OnSelect=`Select(btnTTBack)`.
+
+Inside cntProgressTT, create lblProgressTT: X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=`Text(CountIf(colAnswers,Slot<=varQuestionCount && !IsBlank(Trim(Response)))) & " of " & Text(varQuestionCount) & " responses entered"`. Add lblProgressHelpTT: X=16,Y=`lblProgressTT.Y+lblProgressTT.Height+10`,Width=Parent.Width-32,AutoHeight=true,Text="Required responses must be completed before review. You can save an incomplete draft.",Visible=`!varReadOnly`. Grow the progress container if long text exceeds its planned height; the action-row Max formula prevents overlap.
+
+| Button in cntActionsTT | X | Y | Width | Text / action |
+|---|---|---|---|---|
+| btnTTBack | `0` | `0` | `80` | Back / full Back to details block in this form's recipe |
+| btnTTSaveDraft | `If(App.Width<=760,92,Parent.Width-278)` | `0` | `120` | Save draft / full btnTTSaveDraft.OnSelect |
+| btnTTReview | `If(App.Width<=760,0,Parent.Width-146)` | `If(App.Width<=760,50,0)` | `If(App.Width<=760,Parent.Width,146)` | Review / full btnTTReview.OnSelect |
+| btnTTBackToMine | `0` | `0` | `180` | My nominations / `Select(btnNavMineTT)` |
+
+First three buttons Visible=`!varReadOnly`; btnTTBackToMine.Visible=varReadOnly. Back DisplayMode disables while busy; Save disables while busy/read-only/no category; Review disables while busy/read-only. Copy the complete actions from [this form's recipe](#form-tt); do not replace capture/preflight/save handlers with a simple Navigate. Set screen OnVisible=`Set(varCurrentStep,3)`.
+
+### 7. Stepper instance for scrSpecialTeamAward
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperTT** into cntStepperStripTT. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrSpecialTeamAward
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-home"></a>
+## scrHome — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrHome. Create the following manual containers directly on the screen, except cntScrollHome, which is a **vertical auto-layout container**. Create cntPageHome as a **manual container inside cntScrollHome**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrHome
+  cntHeaderHome
+    lblBrandHome, lblAppTitleHome, lblUserHome
+  cntNavHome
+    btnNavNewHome, btnNavMineHome
+  cntStepperStripHome
+    (no component needed; strip hidden)
+  cntScrollHome
+    cntPageHome
+      lblHeadingHome, lblSubtitleHome
+      (screen content specified below)
+      cntActionsHome
+  btnStartNewHome, btnGoMineHome (hidden action helpers)
+  cntExitOverlayHome
+    cntExitDialogHome
+      lblExitMessageHome, btnExitCancelHome, btnExitDiscardHome
+  cntBusyHome
+    lblBusyHome
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderHome | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavHome | `0` | `cntHeaderHome.Y+cntHeaderHome.Height` | `Parent.Width` | `48` |
+| cntStepperStripHome | `0` | `cntNavHome.Y+cntNavHome.Height` | `Parent.Width` | `0` |
+| cntScrollHome | `0` | `cntStepperStripHome.Y+cntStepperStripHome.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageHome | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsHome.Y+cntActionsHome.Height+If(App.Width<=760,40,56)` |
+| cntActionsHome | `lblHeadingHome.X` | Screen-specific formula below | `lblHeadingHome.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripHome.Visible=`false`. For cntScrollHome, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageHome, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsHome exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingHome: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleHome: same X/Width, Y=`lblHeadingHome.Y+lblHeadingHome.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderHome: lblBrandHome Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleHome Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserHome Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoHome, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavHome: btnNavNewHome, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineHome, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewHome and btnGoMineHome **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewHome.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineHome.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewHome.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewHome)
+)
+```
+
+btnNavMineHome.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineHome)
+)
+```
+
+cntExitOverlayHome: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogHome inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageHome: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelHome: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardHome: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewHome),Select(btnGoMineHome))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyHome last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyHome: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingHome.Text=`"Employee & Team Recognition Awards"`; lblSubtitleHome.Text=`"Recognize a colleague or team."`. cntActionsHome.Y=`lblSubtitleHome.Y+lblSubtitleHome.Height+26`.
+
+
+Inside cntActionsHome, place these classic buttons. For this screen set cntActionsHome.Height=`If(App.Width<=760,150,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-24)/3))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnHomeNew | New nomination | `Select(btnNavNewHome)` |
+| 1 | btnHomeMine | My nominations | `Select(btnNavMineHome)` |
+| 2 | btnHomeAdmin | Manage questions | `Navigate(scrQuestionAdministration,ScreenTransition.None)` |
+
+btnHomeAdmin.Visible=varCanManageQuestions. Keep Home OnVisible free of form resets. The New action resets all six form contexts only after discard handling. No stepper instance is required.
+### Checkpoint — scrHome
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-details"></a>
+## scrNomineeDetails — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrNomineeDetails. Create the following manual containers directly on the screen, except cntScrollDetails, which is a **vertical auto-layout container**. Create cntPageDetails as a **manual container inside cntScrollDetails**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrNomineeDetails
+  cntHeaderDetails
+    lblBrandDetails, lblAppTitleDetails, lblUserDetails
+  cntNavDetails
+    btnNavNewDetails, btnNavMineDetails
+  cntStepperStripDetails
+    cmpStepperDetails
+  cntScrollDetails
+    cntPageDetails
+      lblHeadingDetails, lblSubtitleDetails
+      (screen content specified below)
+      cntActionsDetails
+  btnStartNewDetails, btnGoMineDetails (hidden action helpers)
+  cntExitOverlayDetails
+    cntExitDialogDetails
+      lblExitMessageDetails, btnExitCancelDetails, btnExitDiscardDetails
+  cntBusyDetails
+    lblBusyDetails
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderDetails | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavDetails | `0` | `cntHeaderDetails.Y+cntHeaderDetails.Height` | `Parent.Width` | `48` |
+| cntStepperStripDetails | `0` | `cntNavDetails.Y+cntNavDetails.Height` | `Parent.Width` | `94` |
+| cntScrollDetails | `0` | `cntStepperStripDetails.Y+cntStepperStripDetails.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageDetails | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsDetails.Y+cntActionsDetails.Height+If(App.Width<=760,40,56)` |
+| cntActionsDetails | `lblHeadingDetails.X` | Screen-specific formula below | `lblHeadingDetails.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripDetails.Visible=`true`. For cntScrollDetails, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageDetails, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsDetails exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingDetails: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleDetails: same X/Width, Y=`lblHeadingDetails.Y+lblHeadingDetails.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderDetails: lblBrandDetails Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleDetails Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserDetails Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoDetails, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavDetails: btnNavNewDetails, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineDetails, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewDetails and btnGoMineDetails **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewDetails.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineDetails.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewDetails.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewDetails)
+)
+```
+
+btnNavMineDetails.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineDetails)
+)
+```
+
+cntExitOverlayDetails: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogDetails inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageDetails: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelDetails: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardDetails: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewDetails),Select(btnGoMineDetails))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyDetails last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyDetails: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingDetails.Text=`"Nominee details"`; lblSubtitleDetails.Text=`"Choose the nomination type and tell us who you are recognizing."`. cntActionsDetails.Y=`cntDetailsCard.Y+cntDetailsCard.Height+24`.
+
+
+Inside cntActionsDetails, place these classic buttons. For this screen set cntActionsDetails.Height=`If(App.Width<=760,50,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-0)/1))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnDetailsContinue | Continue | `complete Details Continue button OnSelect block` |
+
+Create cntDetailsCard inside cntPageDetails: X=lblHeadingDetails.X,Width=lblHeadingDetails.Width,Y=lblSubtitleDetails.Y+lblSubtitleDetails.Height+26,Fill=Theme.Surface. Build the type/person/team/role/level controls from **2. scrNomineeDetails** below inside this card, keeping their exact names for the shared formulas. Name the final helper label lblDetailsHelp; place it after the last level input, AutoHeight=true; cntDetailsCard.Height=`lblDetailsHelp.Y+lblDetailsHelp.Height+30`. btnDetailsContinue.DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`; incomplete details may proceed for draft saving. Screen OnVisible=`Set(varCurrentStep,1)`.
+### 7. Stepper instance for scrNomineeDetails
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperDetails** into cntStepperStripDetails. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrNomineeDetails
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-category"></a>
+## scrCategorySelection — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrCategorySelection. Create the following manual containers directly on the screen, except cntScrollCategory, which is a **vertical auto-layout container**. Create cntPageCategory as a **manual container inside cntScrollCategory**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrCategorySelection
+  cntHeaderCategory
+    lblBrandCategory, lblAppTitleCategory, lblUserCategory
+  cntNavCategory
+    btnNavNewCategory, btnNavMineCategory
+  cntStepperStripCategory
+    cmpStepperCategory
+  cntScrollCategory
+    cntPageCategory
+      lblHeadingCategory, lblSubtitleCategory
+      (screen content specified below)
+      cntActionsCategory
+  btnStartNewCategory, btnGoMineCategory (hidden action helpers)
+  cntExitOverlayCategory
+    cntExitDialogCategory
+      lblExitMessageCategory, btnExitCancelCategory, btnExitDiscardCategory
+  cntBusyCategory
+    lblBusyCategory
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderCategory | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavCategory | `0` | `cntHeaderCategory.Y+cntHeaderCategory.Height` | `Parent.Width` | `48` |
+| cntStepperStripCategory | `0` | `cntNavCategory.Y+cntNavCategory.Height` | `Parent.Width` | `94` |
+| cntScrollCategory | `0` | `cntStepperStripCategory.Y+cntStepperStripCategory.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageCategory | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsCategory.Y+cntActionsCategory.Height+If(App.Width<=760,40,56)` |
+| cntActionsCategory | `lblHeadingCategory.X` | Screen-specific formula below | `lblHeadingCategory.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripCategory.Visible=`true`. For cntScrollCategory, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageCategory, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsCategory exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingCategory: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleCategory: same X/Width, Y=`lblHeadingCategory.Y+lblHeadingCategory.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderCategory: lblBrandCategory Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleCategory Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserCategory Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoCategory, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavCategory: btnNavNewCategory, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineCategory, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewCategory and btnGoMineCategory **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewCategory.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineCategory.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewCategory.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewCategory)
+)
+```
+
+btnNavMineCategory.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineCategory)
+)
+```
+
+cntExitOverlayCategory: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogCategory inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageCategory: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelCategory: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardCategory: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewCategory),Select(btnGoMineCategory))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyCategory last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyCategory: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingCategory.Text=`"Award category"`; lblSubtitleCategory.Text=`"Choose the category that best matches the nomination."`. cntActionsCategory.Y=`Max(galCategories.Y+galCategories.Height,lblCategoryState.Y+lblCategoryState.Height)+24`.
+
+
+Inside cntActionsCategory, place these classic buttons. For this screen set cntActionsCategory.Height=`If(App.Width<=760,100,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-12)/2))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnCategoryBack | Back | `Navigate(scrNomineeDetails,ScreenTransition.None)` |
+| 1 | btnCategoryContinue | Continue | `guarded category selection handler in scrCategorySelection recipe` |
+
+Create cntCategorySummary inside cntPageCategory: X/Width match heading,Y=lblSubtitleCategory.Y+lblSubtitleCategory.Height+18,Height=72. Add lblCategorySummary inside, X/Y=16,Width=Parent.Width-32,AutoHeight=true,Text=NomineeDisplay. Create galCategories inside cntPageCategory below summary+22; use the full gallery/template recipe below. Create lblCategoryState below gallery+12, X/Width match heading,AutoHeight=true,Text=`If(varCategoryLoadError,"Categories could not be loaded.",If(IsEmpty(colCategoryOptions),"No categories are currently published for this nomination type.",""))`.
+
+Create hidden btnLoadCategory on this screen, DisplayMode.Edit; its OnSelect uses the complete Category load action. btnCategoryContinue uses the guarded Continue handler in **3. scrCategorySelection**, including varShowCategoryChangeDialog. Add cntCategoryChangeOverlay at screen root, matching the dimensions of cntExitOverlayCategory, Visible=varShowCategoryChangeDialog. Inside add a centered dialog, message, Cancel (`Set(varShowCategoryChangeDialog,false)`) and Confirm (`Select(btnLoadCategory)`) buttons; use the discard-dialog sizes above and unique names lblCategoryChangeMessage, btnCategoryChangeCancel and btnCategoryChangeConfirm. The load handler handles closing/reset only after successful validation. Keep this separate from the top navigation exit dialog. Apply the complete category OnVisible block; do not use only Set(varCurrentStep,2).
+### 7. Stepper instance for scrCategorySelection
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperCategory** into cntStepperStripCategory. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrCategorySelection
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-review"></a>
+## scrReview — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrReview. Create the following manual containers directly on the screen, except cntScrollReview, which is a **vertical auto-layout container**. Create cntPageReview as a **manual container inside cntScrollReview**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrReview
+  cntHeaderReview
+    lblBrandReview, lblAppTitleReview, lblUserReview
+  cntNavReview
+    btnNavNewReview, btnNavMineReview
+  cntStepperStripReview
+    cmpStepperReview
+  cntScrollReview
+    cntPageReview
+      lblHeadingReview, lblSubtitleReview
+      (screen content specified below)
+      cntActionsReview
+  btnStartNewReview, btnGoMineReview (hidden action helpers)
+  cntExitOverlayReview
+    cntExitDialogReview
+      lblExitMessageReview, btnExitCancelReview, btnExitDiscardReview
+  cntBusyReview
+    lblBusyReview
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderReview | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavReview | `0` | `cntHeaderReview.Y+cntHeaderReview.Height` | `Parent.Width` | `48` |
+| cntStepperStripReview | `0` | `cntNavReview.Y+cntNavReview.Height` | `Parent.Width` | `94` |
+| cntScrollReview | `0` | `cntStepperStripReview.Y+cntStepperStripReview.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageReview | Auto-layout parent controls position | Auto-layout parent controls position | `Min(960,Parent.Width)` | `cntActionsReview.Y+cntActionsReview.Height+If(App.Width<=760,40,56)` |
+| cntActionsReview | `lblHeadingReview.X` | Screen-specific formula below | `lblHeadingReview.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripReview.Visible=`true`. For cntScrollReview, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageReview, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsReview exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingReview: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleReview: same X/Width, Y=`lblHeadingReview.Y+lblHeadingReview.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderReview: lblBrandReview Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleReview Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserReview Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoReview, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavReview: btnNavNewReview, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineReview, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewReview and btnGoMineReview **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewReview.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineReview.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewReview.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewReview)
+)
+```
+
+btnNavMineReview.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineReview)
+)
+```
+
+cntExitOverlayReview: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogReview inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageReview: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelReview: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardReview: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewReview),Select(btnGoMineReview))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyReview last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyReview: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingReview.Text=`"Review & submit"`; lblSubtitleReview.Text=`"Check the nomination and supporting evidence before submitting."`. cntActionsReview.Y=`cntDeclaration.Y+cntDeclaration.Height+24`.
+
+
+Inside cntActionsReview, place these classic buttons. For this screen set cntActionsReview.Height=`If(App.Width<=760,100,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-12)/2))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnReviewBack | Back | `Set(varDeclarationAccepted,false); then complete Return to the existing active form block` |
+| 1 | btnReviewSubmit | Submit nomination | `complete Review screen Submit button OnSelect block` |
+
+Create cntReviewDetails, cntReviewQ1 through cntReviewQ6, cntReviewEvidence and cntDeclaration inside cntPageReview. Their full content and expanding height formulas are in **1. scrReview** and **Six expanding review question blocks** below. X/Width match lblHeadingReview for all these blocks. cntReviewDetails.Y=lblSubtitleReview.Y+lblSubtitleReview.Height+26. Keep the review inputs in memory; do not refresh saved answers into this page. btnReviewSubmit.DisplayMode is the full declaration/DetailsValid/ResponsesValid/category/read-only guard in the review recipe. btnReviewBack clears declaration and uses the full active-form route without resets. Set screen OnVisible=`Set(varCurrentStep,4)`.
+
+**Review container completion:** cntReviewQ1.Y=`cntReviewDetails.Y+cntReviewDetails.Height+18`; subsequent question Y/Height/Visible use the six expanded review blocks. cntReviewEvidence.Y=`cntReviewQ6.Y+cntReviewQ6.Height+18`. Name the declaration container **cntDeclaration**; X=lblHeadingReview.X,Width=lblHeadingReview.Width,Y=`cntReviewEvidence.Y+cntReviewEvidence.Height+18`. Place chkDeclaration inside it as documented. Add lblDeclarationHelp inside, X=20,Width=Parent.Width-40,Y=`chkDeclaration.Y+chkDeclaration.Height+12`,AutoHeight=true,Text="Submitting saves this nomination. Submitted nominations are read-only in this app." Set cntDeclaration.Height=`lblDeclarationHelp.Y+lblDeclarationHelp.Height+28`. These exact names complete the cntActionsReview.Y dependency.
+
+### 7. Stepper instance for scrReview
+
+Create component definition cmpStepper once from the full component section. Insert instance **cmpStepperReview** into cntStepperStripReview. Set Width=`Min(1060,Parent.Width)`, X=`(Parent.Width-Self.Width)/2`,Y=0,Height=94,CurrentStep=varCurrentStep. Bind CurrentHex=Theme.PrimaryHex,CompleteHex=Theme.SuccessHex,PendingHex=Theme.BorderHex,MutedHex=Theme.MutedHex,HaloHex=Theme.PaleHex. Steps:
+
+```powerfx
+Table(
+ {StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},
+ {StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},
+ {StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},
+ {StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete}
+)
+```
+
+### Checkpoint — scrReview
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-confirmation"></a>
+## scrConfirmation — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrConfirmation. Create the following manual containers directly on the screen, except cntScrollConfirmation, which is a **vertical auto-layout container**. Create cntPageConfirmation as a **manual container inside cntScrollConfirmation**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrConfirmation
+  cntHeaderConfirmation
+    lblBrandConfirmation, lblAppTitleConfirmation, lblUserConfirmation
+  cntNavConfirmation
+    btnNavNewConfirmation, btnNavMineConfirmation
+  cntStepperStripConfirmation
+    (no component needed; strip hidden)
+  cntScrollConfirmation
+    cntPageConfirmation
+      lblHeadingConfirmation, lblSubtitleConfirmation
+      (screen content specified below)
+      cntActionsConfirmation
+  btnStartNewConfirmation, btnGoMineConfirmation (hidden action helpers)
+  cntExitOverlayConfirmation
+    cntExitDialogConfirmation
+      lblExitMessageConfirmation, btnExitCancelConfirmation, btnExitDiscardConfirmation
+  cntBusyConfirmation
+    lblBusyConfirmation
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderConfirmation | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavConfirmation | `0` | `cntHeaderConfirmation.Y+cntHeaderConfirmation.Height` | `Parent.Width` | `48` |
+| cntStepperStripConfirmation | `0` | `cntNavConfirmation.Y+cntNavConfirmation.Height` | `Parent.Width` | `0` |
+| cntScrollConfirmation | `0` | `cntStepperStripConfirmation.Y+cntStepperStripConfirmation.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageConfirmation | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsConfirmation.Y+cntActionsConfirmation.Height+If(App.Width<=760,40,56)` |
+| cntActionsConfirmation | `lblHeadingConfirmation.X` | Screen-specific formula below | `lblHeadingConfirmation.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripConfirmation.Visible=`false`. For cntScrollConfirmation, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageConfirmation, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsConfirmation exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingConfirmation: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleConfirmation: same X/Width, Y=`lblHeadingConfirmation.Y+lblHeadingConfirmation.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderConfirmation: lblBrandConfirmation Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleConfirmation Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserConfirmation Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoConfirmation, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavConfirmation: btnNavNewConfirmation, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineConfirmation, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewConfirmation and btnGoMineConfirmation **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewConfirmation.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineConfirmation.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewConfirmation.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewConfirmation)
+)
+```
+
+btnNavMineConfirmation.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineConfirmation)
+)
+```
+
+cntExitOverlayConfirmation: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogConfirmation inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageConfirmation: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelConfirmation: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardConfirmation: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewConfirmation),Select(btnGoMineConfirmation))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyConfirmation last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyConfirmation: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingConfirmation.Text=`"Nomination submitted"`; lblSubtitleConfirmation.Text=`NominationReference`. cntActionsConfirmation.Y=`cntConfirmationCard.Y+cntConfirmationCard.Height+24`.
+
+
+Inside cntActionsConfirmation, place these classic buttons. For this screen set cntActionsConfirmation.Height=`If(App.Width<=760,150,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-24)/3))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnConfirmationView | View nomination | `complete Return to the existing active form block` |
+| 1 | btnConfirmationMine | My nominations | `Select(btnNavMineConfirmation)` |
+| 2 | btnConfirmationNew | New nomination | `Select(btnNavNewConfirmation)` |
+
+Create cntConfirmationCard inside cntPageConfirmation: Width=`Min(640,Parent.Width-32)`,X=`(Parent.Width-Self.Width)/2`,Y=lblSubtitleConfirmation.Y+lblSubtitleConfirmation.Height+26,Height=300,Fill=Theme.Surface. Add labels lblConfirmationReference, lblConfirmationCategory, lblConfirmationNominee and lblConfirmationTime inside at X=24,Width=Parent.Width-48,AutoHeight=true. First Y=24, subsequent Y=previous label.Y+previous label.Height+16. Text values are NominationReference,varCategory.Title,NomineeDisplay,Text(varSubmittedOn,"dd mmm yyyy, hh:mm"). Set card Height=lblConfirmationTime.Y+lblConfirmationTime.Height+24. Only form submission success navigates here. View nomination uses the active form already in View mode. No reset in OnVisible.
+### Checkpoint — scrConfirmation
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-mine"></a>
+## scrMyNominations — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrMyNominations. Create the following manual containers directly on the screen, except cntScrollMine, which is a **vertical auto-layout container**. Create cntPageMine as a **manual container inside cntScrollMine**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrMyNominations
+  cntHeaderMine
+    lblBrandMine, lblAppTitleMine, lblUserMine
+  cntNavMine
+    btnNavNewMine, btnNavMineMine
+  cntStepperStripMine
+    (no component needed; strip hidden)
+  cntScrollMine
+    cntPageMine
+      lblHeadingMine, lblSubtitleMine
+      (screen content specified below)
+      cntActionsMine
+  btnStartNewMine, btnGoMineMine (hidden action helpers)
+  cntExitOverlayMine
+    cntExitDialogMine
+      lblExitMessageMine, btnExitCancelMine, btnExitDiscardMine
+  cntBusyMine
+    lblBusyMine
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderMine | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavMine | `0` | `cntHeaderMine.Y+cntHeaderMine.Height` | `Parent.Width` | `48` |
+| cntStepperStripMine | `0` | `cntNavMine.Y+cntNavMine.Height` | `Parent.Width` | `0` |
+| cntScrollMine | `0` | `cntStepperStripMine.Y+cntStepperStripMine.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageMine | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsMine.Y+cntActionsMine.Height+If(App.Width<=760,40,56)` |
+| cntActionsMine | `lblHeadingMine.X` | Screen-specific formula below | `lblHeadingMine.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripMine.Visible=`false`. For cntScrollMine, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageMine, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsMine exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingMine: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleMine: same X/Width, Y=`lblHeadingMine.Y+lblHeadingMine.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderMine: lblBrandMine Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleMine Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserMine Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoMine, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavMine: btnNavNewMine, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineMine, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewMine and btnGoMineMine **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewMine.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineMine.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewMine.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewMine)
+)
+```
+
+btnNavMineMine.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineMine)
+)
+```
+
+cntExitOverlayMine: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogMine inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageMine: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelMine: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardMine: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+
+If(varExitAction="New",Select(btnStartNewMine),Select(btnGoMineMine))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyMine last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyMine: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingMine.Text=`"My nominations"`; lblSubtitleMine.Text=`"View submitted nominations or continue a draft."`. cntActionsMine.Y=`cntMineResults.Y+cntMineResults.Height+24`.
+
+
+Inside cntActionsMine, place these classic buttons. For this screen set cntActionsMine.Height=`If(App.Width<=760,50,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-0)/1))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnMineNew | New nomination | `Select(btnNavNewMine)` |
+
+Create cntMineFilters inside cntPageMine: X/Width match heading,Y=lblSubtitleMine.Y+lblSubtitleMine.Height+26,Height=If(App.Width<=760,240,100). Place the filter controls named in **3. scrMyNominations** inside, stacked on mobile. Create cntMineResults below filters+20, X/Width match heading,Height=600. Place galMineII,galMineIC,galMineIE,galMineTC,galMineTI,galMineTT inside it with X/Y=0,Width/Height=Parent.Width/Parent.Height. Only the selected category gallery is Visible. This is a deliberately bounded scrolling results gallery so delegated records can load; it is not an unbounded collection. Apply the six typed Items/OnSelect recipes from their form sections. Apply the complete My nominations OnVisible refresh block. Keep content height fixed to allow gallery virtualization; page scroll still reaches the action row.
+
+**Filter placement:** preserve the existing filter-control names and OnChange formulas in the browse recipe. Place the Individual/Team selector first, cmbBrowseCategory second, status selector third and txtBrowseId fourth. Give each control a 20-unit label and 40-unit editor. On desktop allocate four equal columns with 12-unit gaps and X=`16+index*((Parent.Width-68)/4+12)`,Width=`(Parent.Width-68)/4`, label Y=8/editor Y=32. On mobile stack four rows with label Y=`12+index*76`, editor Y=label.Y+22, X=16,Width=Parent.Width-32; override cntMineFilters.Height=`If(App.Width<=760,332,100)`. Here index is the literal 0,1,2,3 for the controls in that order. Keep all result galleries at the same origin so only the selected one occupies the viewport.
+
+### Checkpoint — scrMyNominations
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+<a id="build-admin"></a>
+## scrQuestionAdministration — exact controls and build order
+
+### 1. Tree structure and creation order
+
+Select scrQuestionAdministration. Create the following manual containers directly on the screen, except cntScrollAdmin, which is a **vertical auto-layout container**. Create cntPageAdmin as a **manual container inside cntScrollAdmin**. Do not place the header, navigation or modal overlay inside the scroll viewport.
+
+```text
+scrQuestionAdministration
+  cntHeaderAdmin
+    lblBrandAdmin, lblAppTitleAdmin, lblUserAdmin
+  cntNavAdmin
+    btnNavNewAdmin, btnNavMineAdmin
+  cntStepperStripAdmin
+    (no component needed; strip hidden)
+  cntScrollAdmin
+    cntPageAdmin
+      lblHeadingAdmin, lblSubtitleAdmin
+      (screen content specified below)
+      cntActionsAdmin
+  btnStartNewAdmin, btnGoMineAdmin (hidden action helpers)
+  cntExitOverlayAdmin
+    cntExitDialogAdmin
+      lblExitMessageAdmin, btnExitCancelAdmin, btnExitDiscardAdmin
+  cntBusyAdmin
+    lblBusyAdmin
+```
+
+### 2. Container properties — use these exact names
+
+Set Screen.Fill=`Theme.Page`. Set header/nav/stepper Fill=`Theme.Surface`.
+
+| Control | X | Y | Width | Height |
+|---|---|---|---|---|
+| cntHeaderAdmin | `0` | `0` | `Parent.Width` | `If(App.Width<=760,58,64)` |
+| cntNavAdmin | `0` | `cntHeaderAdmin.Y+cntHeaderAdmin.Height` | `Parent.Width` | `48` |
+| cntStepperStripAdmin | `0` | `cntNavAdmin.Y+cntNavAdmin.Height` | `Parent.Width` | `0` |
+| cntScrollAdmin | `0` | `cntStepperStripAdmin.Y+cntStepperStripAdmin.Height` | `Parent.Width` | `Max(0,Parent.Height-Self.Y)` |
+| cntPageAdmin | Auto-layout parent controls position | Auto-layout parent controls position | `Min(1030,Parent.Width)` | `cntActionsAdmin.Y+cntActionsAdmin.Height+If(App.Width<=760,40,56)` |
+| cntActionsAdmin | `lblHeadingAdmin.X` | Screen-specific formula below | `lblHeadingAdmin.Width` | `If(App.Width<=760,96,48)` |
+
+cntStepperStripAdmin.Visible=`false`. For cntScrollAdmin, set LayoutDirection=`LayoutDirection.Vertical`, LayoutOverflowY=`LayoutOverflow.Scroll`, LayoutOverflowX=`LayoutOverflow.Hide`, LayoutGap=0 and all paddings=0. For cntPageAdmin, set AlignInContainer=`AlignInContainer.Center`, FillPortions=0, LayoutMinWidth=0, LayoutMinHeight=0; disable Flexible height. Temporarily use Height=800 until cntActionsAdmin exists, then apply the final Height above. Do not set the page Height to Parent.Height.
+
+### 3. Heading and top navigation
+
+Create classic labels. lblHeadingAdmin: X=`If(App.Width<=760,16,24)`, Y=`If(App.Width<=760,27,39)`, Width=`Parent.Width-2*Self.X`, AutoHeight=true, Size=`If(App.Width<=760,18.75,22.5)`, Font=`Font.'Segoe UI'`, FontWeight=FontWeight.Semibold, Color=Theme.Heading. lblSubtitleAdmin: same X/Width, Y=`lblHeadingAdmin.Y+lblHeadingAdmin.Height+8`, AutoHeight=true, Size=11.25, Color=Theme.Muted.
+
+Inside cntHeaderAdmin: lblBrandAdmin Text=Theme.Brand, X=54, Y=16, Width=76, Height=28; lblAppTitleAdmin Text=Theme.AppTitle, X=144, Y=18, Width=`Max(0,Parent.Width-374)`, Height=28, Visible=`App.Width>760`; lblUserAdmin Text=User().FullName, X=`Max(140,Parent.Width-210)`, Y=18, Width=190, Height=28, Visible=`App.Width>760`. Use Segoe UI and Theme.Heading. Add the award logo from the shared SVG reference as imgLogoAdmin, X=16, Y=`(Parent.Height-28)/2`, Width/Height=28, AccessibleLabel=`Theme.Brand & " awards"`. Do not use prototype user names.
+
+Inside cntNavAdmin: btnNavNewAdmin, Text="New nomination", X=16, Y=5, Width=150, Height=38; btnNavMineAdmin, Text="My nominations", X=174, Y=5, Width=150, Height=38. Both DisplayMode=`If(varIsBusy,DisplayMode.Disabled,DisplayMode.Edit)`. For widths below 340 reduce both button widths proportionally. Use transparent Fill, Theme.Primary text, and visible keyboard focus borders.
+
+### 4. Navigation actions and discard dialog
+
+Create hidden native btnStartNewAdmin and btnGoMineAdmin **on this screen**, Visible=false, DisplayMode=DisplayMode.Edit. btnStartNewAdmin.OnSelect is the complete [New nomination action](#new-nomination-action-after-any-required-discard-confirmation) below. btnGoMineAdmin.OnSelect=`Navigate(scrMyNominations,ScreenTransition.None)`. Select must not target a helper on another screen.
+
+btnNavNewAdmin.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly || varAdminDirty,
+    Set(varExitAction,"New"); Set(varShowExitDialog,true),
+    Select(btnStartNewAdmin)
+)
+```
+
+btnNavMineAdmin.OnSelect:
+
+```powerfx
+If(varHasChanges && !varReadOnly || varAdminDirty,
+    Set(varExitAction,"Mine"); Set(varShowExitDialog,true),
+    Select(btnGoMineAdmin)
+)
+```
+
+cntExitOverlayAdmin: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(0,0,0,0.35)`, Visible=varShowExitDialog. cntExitDialogAdmin inside it: Width=`Min(440,Parent.Width-32)`, Height=220, X=`(Parent.Width-Self.Width)/2`, Y=`Max(16,(Parent.Height-Self.Height)/2)`, Fill=Theme.Surface. lblExitMessageAdmin: X/Y=20, Width=Parent.Width-40, Height=112, Text="Leave this page? Unsaved changes and selected files will be discarded."; Wrap=true. btnExitCancelAdmin: X=20,Y=160,Width=110,Height=38,Text="Cancel",OnSelect=`Set(varShowExitDialog,false)`. btnExitDiscardAdmin: X=`Parent.Width-140`,Y=160,Width=120,Height=38,Text="Discard", OnSelect:
+
+```powerfx
+Set(varShowExitDialog,false);
+Set(varHasChanges,false);
+Set(varAdminDirty,false);
+If(varExitAction="New",Select(btnStartNewAdmin),Select(btnGoMineAdmin))
+```
+
+### 5. Busy layer and button style
+
+Create cntBusyAdmin last at screen root: X/Y=0, Width/Height=Parent.Width/Parent.Height, Fill=`RGBA(255,255,255,0.65)`, Visible=varIsBusy. lblBusyAdmin: Text="Saving or loading…", X=0, Y=`(Parent.Height-40)/2`, Width=Parent.Width, Height=40, Align=Align.Center. Keep buttons disabled while busy; the overlay alone is not the validation guard.
+
+For action buttons use Height=38, Font=`Font.'Segoe UI'`, Size=10.5, radius=4, FocusedBorderThickness=2. Primary actions Fill=Theme.Primary, Color=Color.White; secondary actions Fill=Theme.Surface, Color=Theme.Primary, BorderColor=Theme.Border, BorderThickness=1. Keep each handler's validation conditions below.
+
+### 6. Screen content and action container
+
+lblHeadingAdmin.Text=`"Manage award questions"`; lblSubtitleAdmin.Text=`"Create a new question version and publish after checking it."`. cntActionsAdmin.Y=`cntAdminEditor.Y+cntAdminEditor.Height+24`.
+
+
+Inside cntActionsAdmin, place these classic buttons. For this screen set cntActionsAdmin.Height=`If(App.Width<=760,100,48)`. Each button Width=`If(App.Width<=760,Parent.Width,Min(240,(Parent.Width-12)/2))`, Height=38; X=`If(App.Width<=760,0,index*(Self.Width+12))`, Y=`If(App.Width<=760,index*50,0)`. Replace index with the literal number in the table; do not create an index variable.
+
+| Index | Exact name | Text | OnSelect / exact block to copy |
+|---|---|---|---|
+
+| 0 | btnAdminPublish | Publish new version | `complete Question administration Publish button OnSelect block` |
+| 1 | btnAdminFreshVersion | Use fresh version | `complete Use a fresh version number action in admin recipe` |
+
+Create cntAdminEditor inside cntPageAdmin, X/Width match heading,Y=lblSubtitleAdmin.Y+lblSubtitleAdmin.Height+26,Visible=varCanManageQuestions. Place cmbAdminCategory and btnAdminCopyVersion at top; copy button Text="Copy to new version". Add same-screen hidden btnAdminLoadCopy with the complete load/copy action. btnAdminCopyVersion uses the guarded varAdminDirty action from the admin recipe.
+
+Create galAdminQuestions inside cntAdminEditor using the exact input/control names and slot updates from **4. scrQuestionAdministration**. Add galAdminPreview below the editor gallery and galAdminErrors below the preview, Items=colPublishErrors, TemplateSize=60,Height=`CountRows(colPublishErrors)*60`; set editor Height=galAdminErrors.Y+galAdminErrors.Height+24. Grow editor/preview gallery row heights to fit all fields; retain their documented local collection binding. Set cntActionsAdmin.Visible=varCanManageQuestions; apply the full Publish button DisplayMode guard from the recipe. Add lblAdminDenied at page root, same X/Width as heading,Y=lblSubtitleAdmin.Y+lblSubtitleAdmin.Height+26,AutoHeight=true,Visible=`!varCanManageQuestions`,Text="You do not have access to question administration".
+
+Create cntAdminDiscardOverlay at screen root, matching the exit-overlay layout, Visible=varShowAdminDiscard. Add uniquely named Cancel (`Set(varShowAdminDiscard,false)`) and Confirm (`Set(varShowAdminDiscard,false); Select(btnAdminLoadCopy)`) buttons and a message that unsaved question edits will be discarded. Keep this dialog separate from top navigation. Apply the complete admin OnVisible block and admin action recipes. UI gating does not replace SharePoint configuration-list permissions.
+
+**Admin editor placement:** cmbAdminCategory X=20,Y=20,Width=`Parent.Width-40`,Height=40. btnAdminCopyVersion X=20,Y=`cmbAdminCategory.Y+cmbAdminCategory.Height+12`,Width=220,Height=38. galAdminQuestions X=20,Y=`btnAdminCopyVersion.Y+btnAdminCopyVersion.Height+20`,Width=`Parent.Width-40`,TemplateSize=`If(App.Width<=760,520,440)`,Height=`Min(1000,CountRows(colAdminQuestions)*Self.TemplateSize)`. Keep the gallery scrolling. galAdminPreview X=20,Y=`galAdminQuestions.Y+galAdminQuestions.Height+20`,Width=Parent.Width-40,TemplateSize=180,Height=`Min(540,CountRows(colAdminQuestions)*180)`,Items=`Sort(colAdminQuestions,Slot,SortOrder.Ascending)`. Its label Text=`ThisItem.Title & Char(10) & ThisItem.QuestionText & Char(10) & ThisItem.GuidanceText`,X/Y=12,Width=Parent.TemplateWidth-24,AutoHeight=true; increase TemplateSize if actual approved content wraps beyond 156 units. galAdminErrors X=20,Y=`galAdminPreview.Y+galAdminPreview.Height+20`,Width=Parent.Width-40; template label X/Y=8,Width=Parent.TemplateWidth-16,AutoHeight=true,Text=`Text(ThisItem.Slot) & ": " & ThisItem.Message`. Increase error TemplateSize if text does not fit. These properties complete cntAdminEditor.Height and cntActionsAdmin.Y dependencies.
+
+### Checkpoint — scrQuestionAdministration
+
+- [ ] Each named control exists under the parent stated above; no duplicate form was created.
+- [ ] No formula contains unexplained example tokens such as innerX or lastControl.
+- [ ] At desktop and mobile widths, scroll to the final action and all error text.
+- [ ] Busy state prevents duplicate actions; discard Cancel preserves inputs/files.
+- [ ] Configure the content handlers from the screen's full recipe; resolve App Checker errors before runtime tests.
+
+
+---
+
+# Reference appendix — mappings, complete formulas and historical audit
+
 # Prod — current environment build and correction guide
 
 Prepared 9 November 2026. This is the current manual implementation specification, not a deployed app or proof of production readiness. Use it instead of documentation2 for the new environment's mappings. Existing historical guides are retained unchanged.
@@ -4986,7 +6622,7 @@ Set(varHasChanges,true); Set(varDetailsComplete,false);
 Set(varDeclarationAccepted,false)
 ```
 
-Below controls show a muted helper: “Required details are needed before review. You can select a category and save an incomplete draft.” `cntDetailsCard.Height` = last helper Y + Height +30; action row below card+24. Continue OnSelect is [Details.Continue.OnSelect.fx](#build-sequence-for-all-13-screens). It captures text values directly, then goes to category selection, or back to the existing form when a category is already loaded. Continue is allowed with incomplete details **to permit incomplete drafts**; review is not. Save draft is not present on this screen because a new record may not yet have a destination.
+Below controls show a muted helper: “Required details are needed before review. You can select a category and save an incomplete draft.” `cntDetailsCard.Height` = last helper Y + Height +30; action row below card+24. Continue OnSelect is [Details.Continue.OnSelect.fx](#details-continue-button-onselect). It captures text values directly, then goes to category selection, or back to the existing form when a category is already loaded. Continue is allowed with incomplete details **to permit incomplete drafts**; review is not. Save draft is not present on this screen because a new record may not yet have a destination.
 
 #### 3. scrCategorySelection
 
@@ -5027,7 +6663,7 @@ Empty-state label Visible `!varCategoryLoadError && IsEmpty(colCategoryOptions)`
 
 ##### B. Load the selected question version
 
-Add same-screen hidden `btnLoadCategory`, DisplayMode.Edit, OnSelect the full [Category.Load.OnSelect.fx](#build-sequence-for-all-13-screens). It re-reads the selected category/published pointer and validates 3–6 ordered Q1..QN rows before initializing snapshots. Changing an unsaved selection resets all form controls and queued evidence **only after confirmation and successful configuration validation**. Returning to the same selected category preserves current answers and attachments.
+Add same-screen hidden `btnLoadCategory`, DisplayMode.Edit, OnSelect the full [Category.Load.OnSelect.fx](#category-load-action-after-selectiondiscard-checks). It re-reads the selected category/published pointer and validates 3–6 ordered Q1..QN rows before initializing snapshots. Changing an unsaved selection resets all form controls and queued evidence **only after confirmation and successful configuration validation**. Returning to the same selected category preserves current answers and attachments.
 
 Continue DisplayMode:
 
@@ -5128,7 +6764,7 @@ Add a white declaration card below evidence+18, same X/Width. Classic Checkbox `
 
 Add helper label: “Submitting saves this nomination. Submitted nominations are read-only in this app.” Do not claim a notification email was sent; no notification flow is included. Card Height = checkbox Y+Height+helper Height+28.
 
-Below add Back and Submit nomination buttons. Back resets declaration then uses Navigate-Active-Form.fx. Submit.OnSelect is the complete [Review.Submit.OnSelect.fx](#build-sequence-for-all-13-screens). Submit.DisplayMode:
+Below add Back and Submit nomination buttons. Back resets declaration then uses Navigate-Active-Form.fx. Submit.OnSelect is the complete [Review.Submit.OnSelect.fx](#review-screen-submit-button-onselect). Submit.DisplayMode:
 
 ```powerfx
 If(varIsBusy || varReadOnly || !varDeclarationAccepted ||
@@ -5246,7 +6882,7 @@ Coalesce(varAdminCategory.Title,"No category loaded") &
 "  • Editing new version: " & Text(varAdminNewVersion)
 ```
 
-Add hidden local button `btnAdminLoadCopy`, OnSelect full [Admin.LoadCopy.OnSelect.fx](#build-sequence-for-all-13-screens). Visible button “Copy to new version” has DisplayMode disabled when no selected ID or busy. OnSelect:
+Add hidden local button `btnAdminLoadCopy`, OnSelect full [Admin.LoadCopy.OnSelect.fx](#question-administration-copyload-button-onselect). Visible button “Copy to new version” has DisplayMode disabled when no selected ID or busy. OnSelect:
 
 ```powerfx
 If(varAdminDirty,
@@ -5313,7 +6949,7 @@ If(!varCanManageQuestions || !varAdminLoadOK || varIsBusy || IsBlank(varAdminCat
    DisplayMode.Disabled,DisplayMode.Edit)
 ```
 
-OnSelect is the complete [Admin.Publish.OnSelect.fx](#build-sequence-for-all-13-screens). It requires a successful configuration load, captures local editor values, validates 3–6 contiguous slots, checks the old category pointer, creates missing question rows, checks any existing keys match exactly, re-reads the saved set, checks the pointer again, then updates PublishedQuestionVersion and IsActive **last**. A failed load cannot publish stale editor content under a newly selected category. It never overwrites existing published rows. Add errors gallery Items colPublishErrors, labels ThisItem.Slot/Message.
+OnSelect is the complete [Admin.Publish.OnSelect.fx](#question-administration-publish-button-onselect). It requires a successful configuration load, captures local editor values, validates 3–6 contiguous slots, checks the old category pointer, creates missing question rows, checks any existing keys match exactly, re-reads the saved set, checks the pointer again, then updates PublishedQuestionVersion and IsActive **last**. A failed load cannot publish stale editor content under a newly selected category. It never overwrites existing published rows. Add errors gallery Items colPublishErrors, labels ThisItem.Slot/Message.
 
 If a row save fails, the category pointer is unchanged by that attempt and partial new-version rows may remain. Retry with identical content can reuse matching keys. If content has changed since a partial save, do not overwrite those keys: allocate a fresh version while retaining local edits. Add “Use a fresh version number” button, DisplayMode disabled while busy/no category; OnSelect:
 
