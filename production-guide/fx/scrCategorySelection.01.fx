@@ -1,0 +1,12 @@
+Set(varCurrentStep,2);
+Set(varCategoryLoadError,false);
+IfError(
+    Refresh(AwardCategories);
+    ClearCollect(colCategoryOptions,SortByColumns(
+        Filter(AwardCategories,IsActive=true,AwardType.Value=varAwardType),
+        "DisplayOrder",SortOrder.Ascending));
+    true,
+    Set(varCategoryLoadError,true);
+    Clear(colCategoryOptions);
+    false
+)

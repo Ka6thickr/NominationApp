@@ -10,6 +10,8 @@ This repository contains the source design, provisioning scripts, Power Fx recip
 
 ## Start here
 
+**Current reusable build:** [Prod.md](Prod.md) now indexes 13 separate screen guides with Tree views, property tables and real Power Fx files. Start with [components](production-guide/00-Reusable-Components.md) and [the #E20074 global theme](production-guide/02-Theme.md). These supersede the copied-header instructions in the older continuation guide.
+
 **Continue your manual build:** [stepstocomplete.md](stepstocomplete.md) starts after the confirmed II/IC form corrections and walks through scrolling containers, all screen layouts, shared state and end-to-end testing, with the full formula reference included.
 
 **Current environment:** [Prod.md — reviewed screen exports, latest mapping and full build guide](Prod.md). This supersedes documentation2's order-based list mapping and uses the destination screen/form names supplied on 9 November 2026.

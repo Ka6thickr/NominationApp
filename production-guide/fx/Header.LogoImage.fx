@@ -1,0 +1,1 @@
+"data:image/svg+xml;utf8," & EncodeUrl("<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 28 28""><rect width=""28"" height=""28"" rx=""6"" fill=""" & varAppTheme.PrimaryHex & """/><circle cx=""14"" cy=""11"" r=""5"" fill=""none"" stroke=""white""/><path d=""M11 15 L10 23 L14 20 L18 23 L17 15"" fill=""none"" stroke=""white""/></svg>")

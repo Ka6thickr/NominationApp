@@ -1,0 +1,1 @@
+Table({StepNo:1,Label:"Nominee details",IsComplete:varDetailsComplete},{StepNo:2,Label:"Award category",IsComplete:varCategoryComplete},{StepNo:3,Label:"Criteria & evidence",IsComplete:varResponsesComplete},{StepNo:4,Label:"Review & submit",IsComplete:varSubmissionComplete})

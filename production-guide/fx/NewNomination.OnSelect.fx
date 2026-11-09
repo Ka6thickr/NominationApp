@@ -1,0 +1,37 @@
+Set(varAwardType, "Individual");
+Set(varEmployee, varEmptyPerson);
+Set(varPrimaryContact, varEmptyPerson);
+Set(varNominator, varSignedInPerson);
+Set(varTeamName, ""); Set(varRole, ""); Set(varLevel, "");
+Clear(colTeamMembers);
+Set(varCategory, Defaults(AwardCategories));
+Set(varPendingCategory, Defaults(AwardCategories));
+Set(varNominationId, Blank()); Set(varLoadedModified, Blank()); Set(varSubmittedOn, Blank());
+Set(varQuestionVersion, 0); Set(varQuestionCount, 0);
+Set(varReadOnly, false); Set(varIsBusy, false); Set(varHasChanges, false);
+Set(varSaveIntent, "Draft"); Set(varDeclarationAccepted, false);
+Set(varCurrentStep, 1); Set(varDetailsComplete, false); Set(varCategoryComplete, false);
+Set(varResponsesComplete, false); Set(varSubmissionComplete, false);
+Set(varShowExitDialog, false); Set(varShowCategoryChangeDialog, false);
+ClearCollect(colAnswers, ForAll(Sequence(6) As n,
+    {Slot: n.Value, Prompt: "", Required: false, Response: ""}));
+Clear(colReviewFiles);
+Set(varRecordII, Defaults(BestInnovatorIndividual));
+ResetForm(frmBestInnovatorIndividual);
+NewForm(frmBestInnovatorIndividual);
+Set(varRecordIC, Defaults(MDAward));
+ResetForm(frmMDAward);
+NewForm(frmMDAward);
+Set(varRecordIE, Defaults(TrendMarcherAward));
+ResetForm(frmTrendMarcherAward);
+NewForm(frmTrendMarcherAward);
+Set(varRecordTC, Defaults(BestInnovatorTeam));
+ResetForm(frmBestInnovatorTeam);
+NewForm(frmBestInnovatorTeam);
+Set(varRecordTI, Defaults(MDAwardTeam));
+ResetForm(frmMDAwardTeam);
+NewForm(frmMDAwardTeam);
+Set(varRecordTT, Defaults(SpecialTeamAward));
+ResetForm(frmSpecialTeamAward);
+NewForm(frmSpecialTeamAward);
+Navigate(scrNomineeDetails, ScreenTransition.None)
