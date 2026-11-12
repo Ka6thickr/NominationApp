@@ -1,5 +1,7 @@
 # Prod — reusable components and screen build guides
 
+**New schema extension:** [Selectable question tags](production-guide/03-Question-Tags.md) and [exact column checklist](production-guide/Tag-Columns.csv). This supersedes earlier tag deferral. Apply the complete manual integration before enabling selectors; the existing base FX files do not yet include tag persistence.
+
 Updated 10 November 2026. Build the shared components once, then follow one screen guide at a time. Each screen has its own Tree view, parent/control types, property tables and linked `.fx` files. The two existing forms are retained.
 
 ## Start here
