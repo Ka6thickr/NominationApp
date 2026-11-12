@@ -404,6 +404,3 @@ The global-variable approach follows the [requested theming article](https://www
 index_path=ROOT/'Prod.md'
 index=index_path.read_text(encoding='utf-8').replace('1. [Build reusable','1. [Set up the #E20074 global theme](production-guide/02-Theme.md), then [build reusable')
 index_path.write_text(index,encoding='utf-8')
-tag_guide=OUT/'03-Question-Tags.md'
-if tag_guide.exists():
-    index_path.write_text(index+'\n## Selectable question tags\n\n[Tag schema and full manual integration](production-guide/03-Question-Tags.md) supersedes earlier tag deferral. Base FX files still require the documented tag extension before enabling selections.\n',encoding='utf-8')
